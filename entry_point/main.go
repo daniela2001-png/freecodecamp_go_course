@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"freecodecamp_go_course/conditions"
 	"freecodecamp_go_course/functions"
+	"freecodecamp_go_course/slices"
 	"freecodecamp_go_course/structs"
 )
 
@@ -78,4 +79,16 @@ func main() {
 	} else {
 		fmt.Println("we can send correctly the message")
 	}
+	var costsSlice = []slices.Cost{
+		{0, 4.0},
+		{1, 2.1},
+		{1, 3.1},
+		{5, 2.5},
+	}
+	final := slices.GetCostsByDay(costsSlice)
+	fmt.Println(final, len(final))
+
+	matrix := slices.CreateMatrix(5, 10)
+	fmt.Println(matrix, len(matrix))
+
 }
