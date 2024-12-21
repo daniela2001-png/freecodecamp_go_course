@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"freecodecamp_go_course/conditions"
 	"freecodecamp_go_course/functions"
+	"freecodecamp_go_course/pointers"
 	"freecodecamp_go_course/slices"
 	"freecodecamp_go_course/structs"
 )
@@ -91,4 +92,9 @@ func main() {
 	matrix := slices.CreateMatrix(5, 10)
 	fmt.Println(matrix, len(matrix))
 
+	// pointers example:
+	msgPtr := "shoot dang something else heck"
+	messagePtr := &msgPtr
+	pointers.RemoveProfanity(messagePtr)
+	fmt.Println(msgPtr) // ****** ****** something else ******
 }
