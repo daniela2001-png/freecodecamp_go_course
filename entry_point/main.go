@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"freecodecamp_go_course/conditions"
-	"freecodecamp_go_course/functions"
-	"freecodecamp_go_course/pointers"
-	"freecodecamp_go_course/slices"
-	"freecodecamp_go_course/structs"
+
+	"github.com/daniela2001-png/freecodecamp_go_course/conditions"
+	"github.com/daniela2001-png/freecodecamp_go_course/functions"
+	"github.com/daniela2001-png/freecodecamp_go_course/pointers"
+	"github.com/daniela2001-png/freecodecamp_go_course/slices"
+	"github.com/daniela2001-png/freecodecamp_go_course/structs"
 )
 
 func main() {
