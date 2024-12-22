@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/daniela2001-png/freecodecamp_go_course/concurrency"
 	"github.com/daniela2001-png/freecodecamp_go_course/conditions"
 	"github.com/daniela2001-png/freecodecamp_go_course/functions"
 	"github.com/daniela2001-png/freecodecamp_go_course/pointers"
@@ -98,4 +100,50 @@ func main() {
 	messagePtr := &msgPtr
 	pointers.RemoveProfanity(messagePtr)
 	fmt.Println(msgPtr) // ****** ****** something else ******
+
+	// -- Concurrency --
+
+	// first solve problem
+	concurrency.SendEmailConcurrently()
+
+	// 2d problem solved using channels:
+	emails := [3]concurrency.Email{
+		{
+			Body: "body one",
+			Date: time.Now().UTC(),
+		},
+		{
+			Body: "body two",
+			Date: time.Now().UTC(),
+		},
+		{
+			Body: "body three",
+			Date: time.Date(2019, 12, 31, 9, 0, 0, 0, time.UTC),
+		},
+	}
+	thereExistsOlds := concurrency.CheckEmailAge(emails)
+	fmt.Printf("There are  old people ? : %v", thereExistsOlds) // [false, false, true]
+
+	// 3th problem using tokens channels:
+	numsDB := 5
+	tokensChan, numbActiveDBs := concurrency.GetDBsChannel(numsDB)
+	concurrency.WaitForDBs(numsDB, tokensChan)
+	fmt.Printf("The total number of online or active db's are equal to: %d\n", *numbActiveDBs)
+
+	// 4th problem using buffered channels:
+	batchEmail := []string{
+		"Hi there What is up",
+		"Salve !",
+		"Hallo !",
+	}
+	concurrency.ManageEmailsWithAQueue(batchEmail)
+
+	// problem #5 using the validation when a channel is closed:
+	concurrency.ManageReportsConcurrently()
+
+	// fibonacci using concurrency:
+	upTo := 8
+	serie := concurrency.ConcurrentFib(upTo)
+	fmt.Println(serie)
+
 }
