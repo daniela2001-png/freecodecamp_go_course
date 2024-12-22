@@ -146,4 +146,7 @@ func main() {
 	serie := concurrency.ConcurrentFib(upTo)
 	fmt.Println(serie)
 
+	// pingpong concurrency:
+	concurrency.PingPongConcurrency(5)
+
 }

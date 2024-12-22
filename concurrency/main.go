@@ -26,6 +26,7 @@ package concurrency
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -390,4 +391,162 @@ func logSms(sms string) {
 
 func logEmail(email string) {
 	fmt.Println("Email:", email)
+}
+
+// --- Channels Review ---
+/*
+
+	* A declared but uninitialized channel is nil just like a slice
+		var s []int       // s is nil
+		var c chan string // c is nil
+
+		var s = make([]int, 5) // s is initialized and not nil
+		var c = make(chan int) // c is initialized and not nil
+
+	* A send to a nil channel blocks forever
+		var c chan string        // c is nil
+		c <- "let's get started" // blocks
+
+	* A receive from a nil channel blocks forever
+		var c chan string // c is nil
+		fmt.Println(<-c)  // blocks
+
+	* A send to a closed channel panics
+		var c = make(chan int, 100)
+		close(c)
+		c <- 1 // panic: send on closed channel
+
+	* A receive from a closed channel returns the zero value immediately
+		var c = make(chan int, 100)
+		close(c)
+		fmt.Println(<-c) // 0
+*/
+
+// Assignment:
+/*
+	Run the code as-is.
+	You should see that it doesn't do anything interesting: no ping or pong messages are printed.
+
+	Fix the bug in the pingPong function.
+
+	Remember: if a program exits before its goroutines have completed, those goroutines will be killed silently.
+	Which of the function calls probably shouldn't run in the background as a goroutine?
+*/
+
+func pingPong(numPings int) {
+	pings := make(chan struct{})
+	pongs := make(chan struct{})
+	go pinger(pings, pongs, numPings)
+	go ponger(pings, pongs)
+
+	i := 0
+	for range pongs {
+		fmt.Println("got pong", i)
+		i++
+	}
+	fmt.Println("pongs done")
+}
+
+// don't touch below this line
+
+func pinger(pings, pongs chan struct{}, numPings int) {
+	sleepTime := 50 * time.Millisecond
+	for i := 0; i < numPings; i++ {
+		fmt.Printf("sending ping %v\n", i)
+		pings <- struct{}{}
+		time.Sleep(sleepTime)
+		sleepTime *= 2
+	}
+	close(pings)
+}
+
+func ponger(pings, pongs chan struct{}) {
+	i := 0
+	for range pings {
+		fmt.Printf("got ping %v, sending pong %v\n", i, i)
+		pongs <- struct{}{}
+		i++
+	}
+	fmt.Println("pings done")
+	close(pongs)
+}
+
+func PingPongConcurrency(numPings int) {
+	fmt.Println("Starting game...")
+	pingPong(numPings)
+	fmt.Println("===== Game over =====")
+}
+
+// --- Mutexes ---
+/*
+
+	Mutexes in Go (prevents race conditions)
+	- Mutexes allow us to lock access to data.
+	This ensures that we can control which goroutines can access certain data at which time.
+
+	Go's standard library provides a built-in implementation of a mutex with the sync.Mutex type and its two methods:
+
+		- .Lock()
+		- .Unlock()
+	We can protect a block of code by surrounding it with a call to Lock and Unlock as shown on the protected() method below.
+
+	It's good practice to structure the protected code within a function so that defer can be used to ensure that we never forget to unlock the mutex.
+
+		func protected(){
+			mu.Lock()
+			defer mu.Unlock()
+			// the rest of the function is protected
+			// any other calls to `mu.Lock()` will block
+		}
+
+	Mutexes are powerful. Like most powerful things, they can also cause many bugs if used carelessly.
+
+	** Maps are not thread-safe **
+	- Maps are not safe for concurrent use! If you have multiple goroutines accessing the same map, and at least one of them is writing to the map, you must lock your maps with a mutex.
+
+*/
+
+// Assignment:
+
+/*
+We send emails across many different goroutines at Mailio.
+To keep track of how many we've sent to a given email address, we use an in-memory map.
+
+Our safeCounter struct is unsafe! Update the inc() and val() methods so that they utilize the safeCounter's mutex to ensure that the map is not accessed by multiple goroutines at the same time.
+*/
+type safeCounter struct {
+	counts map[string]int
+	mu     *sync.Mutex
+}
+
+func (sc safeCounter) inc(key string) {
+	// lock until the map is updated
+	sc.mu.Lock()
+	// unlock function with the purpose that another go routine takes it
+	defer sc.mu.Unlock()
+	// update value from map by key
+	sc.slowIncrement(key)
+}
+
+func (sc safeCounter) val(key string) int {
+	// lock until the map is readed
+	sc.mu.Lock()
+	// unlock function with the purpose that another go routine takes it
+	defer sc.mu.Unlock()
+	// gets map value by key
+	return sc.slowVal(key)
+}
+
+// don't touch below this line
+
+func (sc safeCounter) slowIncrement(key string) {
+	tempCounter := sc.counts[key]
+	time.Sleep(time.Microsecond)
+	tempCounter++
+	sc.counts[key] = tempCounter
+}
+
+func (sc safeCounter) slowVal(key string) int {
+	time.Sleep(time.Microsecond)
+	return sc.counts[key]
 }
